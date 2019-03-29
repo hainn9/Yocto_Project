@@ -57,6 +57,27 @@ Image được tạo ra từ Yocto Project có thể boot lên QEMU Emulator và
 	    	- BB_NUMBER_THREADS and PARALLEL_MAKE : dùng để tăng tốc độ build nếu host machine là multi core processor (gán bằng 2 * number of processor core)
 	    	- PACKAGE_CLASSES: config loại packages manager (deb, ipk, rpm)
 
+	    +) Setup các recipes cần thiết cho việc build bằng cách modify BBLAYERS trong file conf/bblayers.conf. Các layers thường được add là meta-openembedded and meta-sdr layers, và các metadata của poky (meta, meta-yocto, meta-yocto-bsp)
+	    	Ngoài ra tuỳ theo target device mà sẽ có các metadata khác.
+	    	Ví dụ:
+
+	    		For Freescale ARM platforms: meta-fsl-arm, Freescale/meta-fsl-arm-extra, Freescale/meta-fsl-demos
+	    		For the Raspberry Pi 2: meta-raspberrypi
+	    		...
+	    	Sample:
+	    		BBLAYERS ?= " \
+						  /home/jon/software/yocto/poky-jethro-2.0/meta \
+						  /home/jon/software/yocto/poky-jethro-2.0/meta-yocto \
+						  /home/jon/software/yocto/poky-jethro-2.0/meta-yocto-bsp \
+						  /home/jon/software/yocto/meta-openembedded/meta-oe \
+						  /home/jon/software/yocto/meta-openembedded/meta-filesystems \
+						  /home/jon/software/yocto/meta-openembedded/meta-networking \
+						  /home/jon/software/yocto/meta-openembedded/meta-python \
+						  /home/jon/software/yocto/meta-sdr \
+						  /home/jon/software/yocto/meta-fsl-arm \
+						  /home/jon/software/yocto/meta-fsl-arm-extra \
+  "
+
 	     $ bitbake -k core-image-sato (command này dùng để build ra OS image cho target. Note: BitBake requires Python 2.6 or 2.7)
 	     $ runqemu qemux86 (command này dùng để run OS image)
 
@@ -107,6 +128,15 @@ Image được tạo ra từ Yocto Project có thể boot lên QEMU Emulator và
 		         <kernel-image> là architecture-specific kernel image.
 
 		         <filesystem-image> là .ext3 filesystem image.
+
+
+	- Common problem when bitbake fail and solution:
+		+) Host machine does not have required package(s). If you do not have certain tools installed, bitbake will error out and request that you install a specific program.
+			For example, Ubuntu users will need to install the chrpath package, as it is not installed by default.
+		+) Typos in the config files
+			Check for missing quotes around variable assignments
+			Check for missing or extra line continuation characters (\ at the end of a line)
+		+) Forgot to include a layer in conf/bblayers.conf
 
 
 
