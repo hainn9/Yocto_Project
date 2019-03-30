@@ -140,6 +140,12 @@ Image được tạo ra từ Yocto Project có thể boot lên QEMU Emulator và
 
 
 
+	- Recipe: mỗi software component trong Linux distribution system sẽ được liên quan đến một hay nhiều file chứa thông tin về meta-data (dependencies, patches, build instructions) của nó. Có 1 Top-level single file sẽ define các tasks của software đó, file này có định dạng là *.bb và được gọi là recipe file. Các recipe file có tính kế thừa và bao gồm: kế thừa các class files (*.bbclass file) - là những file chưa thông tin về các meta-data cho commonly-used types of build and packaging operations; bao gồm các include files (*.inc) -  là những file chứa common set of definitions. Ngoài ra còn có các patches and auxiliary files - có thể xem như là các lệnh build của recipe.
+
+	- Một tập các recipe files liên quan đến một feature cụ thể nào đó thường được tổ chức thành 1 layer.
+
+
+
 
 
 
