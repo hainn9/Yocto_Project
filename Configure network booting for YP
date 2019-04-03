@@ -1,0 +1,56 @@
+- Idea: Ở phia host system, ta sẽ sử dụng TFTP server để lưu trữ Linux kernel và sử dụng NFS để lưu trữ Root filesystem. Ở phía target device, ta sẽ lưu trữ U-Boost bootloader trong eMMC của device hoặc trong SD Card. Với setup như này, bootloader sẽ fetch kernel từ TFTP server và kernel sẽ mount root filesystem từ NFS server. 
+
+
+- Install: 
+
+	+) TFTP server:
+		$ sudo apt-get install tftpd-hpa
+		(configure file được chứa ở /etc/default/tftpd-hpa, root TFTP foler là /var/lib/tftpboot)
+		$ sudo chmod 1777 /var/lib/tftpboot
+
+		Copy kernel và device tree:
+		$ cd {build folder}/tmp/deploy/images/{machine name}/
+		$ cp zImage-***.bin zImage-***.dtb /var/lib/tftpboot
+
+
+	+) NFS server:
+		$ sudo apt-get install nfs-kernel-server
+
+		tạo folder root cho NFS và copy rootfilesystem vào:
+		$ sudo mkdir /nfsroot
+		$ cd /nfsroot
+		$ sudo tar xvf {build folder}/tmp/deploy/images/{machine name}/core-image-minimal-***.tar.bz2
+
+		Next, we will configure the NFS server to export the /nfsroot folder: 
+		/etc/exports:
+		/nfsroot/ *(rw,no_root_squash,async,no_subtree_check)
+
+		Restart NFS server để apply configure file:
+		$ sudo service nfs-kernel-server restart
+
+
+- Thực hiện network booting như sau:
+
+	1. Get an IP address by DHCP:
+		   > dhcp
+		Alternatively, you can configure a static IP address with:
+	       > setenv ipaddr <static_ip>
+
+	2. Con gure the IP address of your host system, where the TFTP and NFS servers have been set up:
+	       > setenv serverip <host_ip>
+
+	3. Con gure the root  lesystem mount:
+	       > setenv nfsroot /nfsroot
+
+	4. Con gure the Linux kernel and device tree  lenames:
+	       > setenv image zImage-wandboard-quad.bin
+	       > setenv fdt_file zImage-imx6q-wandboard.dtb
+
+	5. If you have con gured a static IP address, you need to disable DHCP on boot by running:
+	       > setenv ip_dyn no
+
+	6. Save the U-Boot environment to the microSD card:
+		   > saveenv
+
+	7. Perform a network boot:
+		   > run netboot

@@ -1,0 +1,11 @@
+- Giống như việc Google sử dụng 1 repo tool để quản lý các support cho Android, để quản lý các layer được add vào Yocto project của bạn thì cũng sử dụng 1 repo tool
+
+	Cài đặt repo tool:
+
+	$ sudo curl http://commondatastorage.googleapis.com/git-repo-downloads/repo > /usr/local/sbin/repo
+	$ sudo chmod a+x /usr/local/sbin/repo
+
+
+- Để boot image sau khi build lên device cthường dùng 2 cách:
+	+ Dùng SDCard: Đưa buidt-image vào SDCard ($sudo dd if=core-image-minimal.sdcard of=/dev/sdN bs=1M && sync) sau đó booting device từ SDCard này.
+	+ Dùng Ethernet DHCP: config file conf/local.conf để add SSH server to image, sau đó connect với board thông qua SSH: $ ssh root@<ip_adress>
