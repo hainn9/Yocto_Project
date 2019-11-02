@@ -1,0 +1,53 @@
+Guideline for Qt cross-compile and debug Raspberry Pi3 Qt App
+
+1. Build cross-compiler SDK with Yocto and installed it on host machine
+
+	$ source poky-warrior/oe-init-build-env rpi/build
+	$ bitbake meta-toolchain-qt5
+(results in ${TMPDIR}/deploy/sdk)
+
+2. Copy the SDK to host machine and install it
+	
+	$ sudo poky-glibc-x86_64-meta-toolchain-qt5-cortexa7hf-neon-vfpv4-toolchain-xxx.sh
+
+input the installation path (example /opt/poky/rpixxx)
+
+3. Configure Qt Creator
+Add Qt version:
+	Version name: RPI3Qt5.12
+	qmake path: /opt/poky/rpi-2.1.1/sysroots/x86_64-pokysdk-linux/usr/bin/qt5/qmake
+
+Add compiler:
+	Name: GCC for RPI3
+	Path: /opt/poky/rpi-2.1.1/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-gcc
+
+Add debugger:
+	Name: GDB for RPI3
+	Path: /opt/poky/rpi-2.1.1/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-gdb
+	Type: GDB
+	ABIs: arm-linux-generic-elf-32bit
+	Version: 7.10.1
+
+Add kit:
+	Name: RPI3
+	Device type: Generic Linux Device
+	Device: RPi (default for Generic Linux)
+	Sysroot: /opt/poky/rpi-2.1.1/sysroots/cortexa7hf-neon-vfp4-poky-linux-gnueabi
+	Compiler: GCC for RPI3
+	Environment: No changes to apply.
+	Debugger: GDB for RPI3
+	Qt version: RPI3Qt5.12
+	Qt mkspec: linux-oe-g++
+
+4. Add device to QtCreator and run test sample
+In Option -> Devices
+Add RPI device and setup IP addreess of RPI3 to connect 
+
+Source the SDK environment script to setup some initial environment variables
+	$ source /opt/poky/rpi-2.1.1/environment-setup-cortexa7hf-neon-vfpv4-poky-linux-gnueabi
+
+
+Open or create a Qt test project and run it on Qt Creator, configure this project with device and kit, that is created above
+
+
+

@@ -1,0 +1,134 @@
+Guideline for Building Raspberry Pi System (include Qt framework) with Yocto Project
+
+I. If you want to use a pre-built system, just download it from this repository and flash to SDCard or eMMC
+(or download from here: https://jumpnowtek.com/downloads/rpi/)
+Instructions for installing onto an SD card:
+$ unxz -c <img-name>.xz | sudo dd of=/dev/sdb bs=1M
+
+Adjust the '/dev/sdb' to where the SD card shows up on your machine.
+
+You can use lsblk to find out.
+
+
+User: root
+Password: jumpnowtek
+
+II. Build from scratch
+1. System info
+	Linux kernel version: 4.19
+	Qt version 5.12.1 (no X11 an no desktop; Qt embedded linux plugins: eglfs and linuxfb)
+	Python version 3.7.2
+	gcc/g++ verison 8.3.0
+	git version 2.20.1
+	Raspicam (command line tool for Rasp Pi camera) is installed
+
+Build machine required
+OS: Ubuntu 
+packages dependence: build-essential chrpath diffstat gawk libncurses5-dev texinfo python2.7
+
+2. Download all layer dependencies
+
+Poky:
+	$ git clone -b warrior git://git.yoctoproject.org/poky.git poky-warrior
+
+	$ cd poky-warrior
+
+OpenEmbedded:
+	$ git clone -b warrior git://git.openembedded.org/meta-openembedded
+
+Raspberry Pi layer:
+	$ git clone -b warrior git://git.yoctoproject.org/meta-raspberrypi
+
+Qt5 layer:
+	$ git clone -b warrior https://github.com/meta-qt5/meta-qt5
+
+Meta-rpi layer (a custom layer):
+	$ mkdir rpi
+	$ cd rpi
+	$ git clone -b warrior git://github.com/jumpnow/meta-rpi
+
+3. Build image
+	$ mkdir -p rpi/build/conf
+	$ source poky-warrior/oe-init-build-env rpi/build
+	$ cp meta-rpi/conf/local.conf.sample build/conf/local.conf
+	$ cp meta-rpi/conf/bblayers.conf.sample build/conf/bblayers.conf
+
+Edit build/conf/bblayers.conf:
+	change ${HOME} by path of folder
+
+Edit build/conf/local.conf:
+	MACHINE = "raspberrypi3" (for build image for RPI3)
+
+	change root password in EXTRA_USERS_PARAMS
+
+	comment the following line to don't want to change password on first login
+	INHERIT += "chageusers"
+	CHAGE_USERS_PARAMS = "chage -d0 root; "
+
+Build:
+	$ bitbake qt5-image
+(if havebuild error related to packages, solution is clean the failed packages and rerun the build
+Example: zip failed
+	$ bitbake -c cleansstate zip
+	$ bitbake zip
+	$ bitbake qt5-image
+)
+
+
+4. Copy the binaries to SD card (or eMMC)
+In the meta-rpi/scripts have some scripts to help format and copy the binary files to microSD
+
+Use lsblk to check microSD (example sdb)
+
+mk2parts.sh : make 2 partitions required for RPI
+	$ cd meta-rpi/scripts
+	$ sudo ./mk2parts.sh sdb
+
+create mount folder as mount point in build machine (host machine) 
+	$ sudo mkdir /media/card
+
+copy_boot.sh : copy GPU firmware, the Linux kernel, dtbs and overlays, config.txt and cmdline.txt to the boot partition of the SD card
+	$ export OETMP=rpi/build/tmp
+	$ export MACHINE=raspberrypi3
+	$ ./copy_boot.sh sdb
+
+
+copy_rootfs.sh : copy the root file system to the second partition of the SD card
+	$ ./copy_rootfs.sh sdb qt5
+
+
+5. Get info of built image
+List all recipes:
+	$ bitbake -s
+
+List packages that the recipe produce
+	$ oe-pkgdata-util list-pkgs -p <recipe-name>
+
+List individual files a package will install
+	$ oe-pkgdata-util list-pkg-files <package-name>
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
